@@ -1,4 +1,4 @@
-package ru.babobka.miller.util;
+package ru.babobka.primecounter.util;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 

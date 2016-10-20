@@ -1,7 +1,7 @@
-package ru.babobka.miller.model;
+package ru.babobka.primecounter.model;
 
-import ru.babobka.miller.util.MathUtil;
 import ru.babobka.nodeserials.NodeRequest;
+import ru.babobka.primecounter.util.MathUtil;
 import ru.babobka.subtask.model.RequestDistributor;
 
 import java.io.Serializable;
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by dolgopolov.a on 31.07.15.
  */
-public final class MillerPrimeCounterDistributor implements RequestDistributor {
+public final class PrimeCounterDistributor implements RequestDistributor {
 	private static final String BEGIN = "begin";
 
 	private static final String END = "end";

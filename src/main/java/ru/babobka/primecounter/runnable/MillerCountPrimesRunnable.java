@@ -1,8 +1,8 @@
-package ru.babobka.miller.runnable;
+package ru.babobka.primecounter.runnable;
 
-import ru.babobka.miller.model.Range;
-import ru.babobka.miller.tester.MillerRabinPrimeTester;
-import ru.babobka.miller.tester.PrimeTester;
+import ru.babobka.primecounter.model.Range;
+import ru.babobka.primecounter.tester.DummyPrimeTester;
+import ru.babobka.primecounter.tester.PrimeTester;
 
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
@@ -17,7 +17,7 @@ public class MillerCountPrimesRunnable implements Runnable {
 
 	private final int id;
 
-	private final PrimeTester tester = new MillerRabinPrimeTester();
+	private final PrimeTester tester = new DummyPrimeTester();
 
 	public MillerCountPrimesRunnable(Range range, int id, AtomicIntegerArray resultArray) {
 		this.range = range;

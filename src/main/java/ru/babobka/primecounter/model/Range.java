@@ -1,4 +1,4 @@
-package ru.babobka.miller.model;
+package ru.babobka.primecounter.model;
 
 /**
  * Created by dolgopolov.a on 07.07.15.

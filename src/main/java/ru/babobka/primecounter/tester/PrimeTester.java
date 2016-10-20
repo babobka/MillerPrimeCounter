@@ -1,4 +1,4 @@
-package ru.babobka.miller.tester;
+package ru.babobka.primecounter.tester;
 
 /**
  * Created by dolgopolov.a on 06.07.15.

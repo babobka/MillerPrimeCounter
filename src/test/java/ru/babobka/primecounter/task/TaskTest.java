@@ -1,4 +1,4 @@
-package subtask;
+package ru.babobka.primecounter.task;
 
 import static org.junit.Assert.*;
 
@@ -9,13 +9,13 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import ru.babobka.miller.task.MillerRabinPrimeCounterTask;
 import ru.babobka.nodeserials.NodeRequest;
+import ru.babobka.primecounter.task.PrimeCounterTask;
 import ru.babobka.subtask.model.SubTask;
 
 public class TaskTest {
 
-	private final SubTask TASK = new MillerRabinPrimeCounterTask();
+	private final SubTask TASK = new PrimeCounterTask();
 
 	private NodeRequest tenPrimesRequest;
 
@@ -23,9 +23,16 @@ public class TaskTest {
 
 	private NodeRequest tenThousandPrimesRequest;
 
+	private NodeRequest millionPrimesRequest;
+
 	@Before
 	public void init() {
 		Map<String, Serializable> additionMap = new HashMap<>();
+		additionMap.put("begin", 0);
+		additionMap.put("end", 15_485_863);
+		millionPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
+
+		additionMap = new HashMap<>();
 		additionMap.put("begin", 0);
 		additionMap.put("end", 7919);
 		thousandPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
@@ -48,6 +55,12 @@ public class TaskTest {
 		assertFalse(TASK.validateRequest(thousandPrimesRequest).isValid());
 	}
 
+	
+	@Test
+	public void testMillionPrimes() {
+		assertEquals(TASK.execute(millionPrimesRequest).getResultMap().get("primeCount"), 1_000_000);
+	}
+	
 	@Test
 	public void testTenThousandPrimes() {
 		assertEquals(TASK.execute(tenThousandPrimesRequest).getResultMap().get("primeCount"), 10000);

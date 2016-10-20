@@ -1,12 +1,12 @@
-package ru.babobka.miller.task;
+package ru.babobka.primecounter.task;
 
-import ru.babobka.miller.model.MillerPrimeCounterDistributor;
-import ru.babobka.miller.model.PrimeCounterReducer;
-import ru.babobka.miller.model.Range;
-import ru.babobka.miller.runnable.MillerCountPrimesRunnable;
-import ru.babobka.miller.util.MathUtil;
-import ru.babobka.miller.util.ThreadUtil;
 import ru.babobka.nodeserials.NodeRequest;
+import ru.babobka.primecounter.model.PrimeCounterDistributor;
+import ru.babobka.primecounter.model.PrimeCounterReducer;
+import ru.babobka.primecounter.model.Range;
+import ru.babobka.primecounter.runnable.MillerCountPrimesRunnable;
+import ru.babobka.primecounter.util.MathUtil;
+import ru.babobka.primecounter.util.ThreadUtil;
 import ru.babobka.subtask.model.ExecutionResult;
 import ru.babobka.subtask.model.Reducer;
 import ru.babobka.subtask.model.RequestDistributor;
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 /**
  * Created by dolgopolov.a on 15.12.15.
  */
-public class MillerRabinPrimeCounterTask implements SubTask {
+public class PrimeCounterTask implements SubTask {
 
 	private volatile AtomicReferenceArray<Thread> localThreads;
 
@@ -36,7 +36,7 @@ public class MillerRabinPrimeCounterTask implements SubTask {
 
 	private final PrimeCounterReducer reducer = new PrimeCounterReducer();
 
-	private final MillerPrimeCounterDistributor distributor = new MillerPrimeCounterDistributor();
+	private final PrimeCounterDistributor distributor = new PrimeCounterDistributor();
 
 	private volatile boolean stopped;
 
@@ -136,7 +136,7 @@ public class MillerRabinPrimeCounterTask implements SubTask {
 	}
 
 	public SubTask newInstance() {
-		return new MillerRabinPrimeCounterTask();
+		return new PrimeCounterTask();
 	}
 
 }

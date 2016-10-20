@@ -1,4 +1,4 @@
-package ru.babobka.miller.model;
+package ru.babobka.primecounter.model;
 
 import ru.babobka.nodeserials.NodeResponse;
 import ru.babobka.subtask.exception.ReducingException;
