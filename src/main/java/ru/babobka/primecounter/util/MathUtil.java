@@ -31,6 +31,24 @@ public interface MathUtil {
 		return ranges;
 	}
 
+	public static boolean isPrime(long n) {
+		if (n < 2) {
+			return false;
+		}
+		if (n != 2 && n % 2 == 0) {
+
+			return false;
+		}
+		int sqrt = (int) Math.sqrt(n);
+		for (int i = 3; i <= sqrt; i += 2) {
+			if (n % i == 0) {
+
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static long gcd(long a, long b) {
 		if (b == 0) {
 			return a;
@@ -38,7 +56,5 @@ public interface MathUtil {
 			return gcd(b, a % b);
 		}
 	}
-
-
 
 }

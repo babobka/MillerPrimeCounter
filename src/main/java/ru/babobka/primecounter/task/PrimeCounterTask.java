@@ -4,9 +4,9 @@ import ru.babobka.nodeserials.NodeRequest;
 import ru.babobka.primecounter.model.PrimeCounterDistributor;
 import ru.babobka.primecounter.model.PrimeCounterReducer;
 import ru.babobka.primecounter.model.Range;
-import ru.babobka.primecounter.runnable.MillerCountPrimesRunnable;
+import ru.babobka.primecounter.runnable.PrimeCounterCallable;
 import ru.babobka.primecounter.util.MathUtil;
-import ru.babobka.primecounter.util.ThreadUtil;
+
 import ru.babobka.subtask.model.ExecutionResult;
 import ru.babobka.subtask.model.Reducer;
 import ru.babobka.subtask.model.RequestDistributor;
@@ -14,17 +14,21 @@ import ru.babobka.subtask.model.SubTask;
 import ru.babobka.subtask.model.ValidationResult;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by dolgopolov.a on 15.12.15.
  */
 public class PrimeCounterTask implements SubTask {
 
-	private volatile AtomicReferenceArray<Thread> localThreads;
+	private ExecutorService threadPool;
 
 	private static final String BEGIN = "begin";
 
@@ -36,32 +40,49 @@ public class PrimeCounterTask implements SubTask {
 
 	private final PrimeCounterReducer reducer = new PrimeCounterReducer();
 
-	private final PrimeCounterDistributor distributor = new PrimeCounterDistributor();
+	private final PrimeCounterDistributor distributor;
 
 	private volatile boolean stopped;
+
+	public PrimeCounterTask() {
+		distributor = new PrimeCounterDistributor("Dummy prime counter");
+	}
 
 	@Override
 	public void stopTask() {
 		stopped = true;
-		ThreadUtil.interruptBatch(localThreads);
+		threadPool.shutdownNow();
+
 	}
 
 	@Override
 	public ExecutionResult execute(NodeRequest request) {
-		if (!stopped) {
-			Map<String, Serializable> result = new HashMap<>();
-			int threadNum;
-			if (isRequestDataTooSmall(request.getAddition())) {
-				threadNum = 1;
+		try {
+			if (!stopped) {
+				Map<String, Serializable> result = new HashMap<>();
+				int threadNum;
+				if (isRequestDataTooSmall(request.getAddition())) {
+					threadNum = 1;
+				} else {
+					threadNum = Runtime.getRuntime().availableProcessors();
+				}
+				threadPool = Executors.newFixedThreadPool(threadNum);
+				try {
+					result.put(PRIME_COUNT, countPrimes(((Number) request.getAddition().get(BEGIN)).longValue(),
+							((Number) request.getAddition().get(END)).longValue(), threadNum));
+				} catch (Exception e) {
+					if (!stopped) {
+						e.printStackTrace();
+					}
+				}
+				return new ExecutionResult(stopped, result);
 			} else {
-				threadNum = Runtime.getRuntime().availableProcessors();
+				return new ExecutionResult(stopped, null);
 			}
-
-			result.put(PRIME_COUNT, countPrimes(((Number) request.getAddition().get(BEGIN)).longValue(),
-					((Number) request.getAddition().get(END)).longValue(), threadNum));
-			return new ExecutionResult(stopped, result);
-		} else {
-			return new ExecutionResult(stopped, null);
+		} finally {
+			if (threadPool != null) {
+				threadPool.shutdownNow();
+			}
 		}
 	}
 
@@ -82,33 +103,24 @@ public class PrimeCounterTask implements SubTask {
 				return new ValidationResult(e.getMessage(), false);
 			}
 		}
-		return new ValidationResult(null, true);
+		return new ValidationResult(true);
 	}
 
-	private int countPrimes(long rangeBegin, long rangeEnd, int threadNum) {
+	private int countPrimes(long rangeBegin, long rangeEnd, int parts) throws InterruptedException, ExecutionException {
 
-		AtomicIntegerArray resultArray = new AtomicIntegerArray(threadNum);
-		Thread[] threads = new Thread[threadNum];
-		localThreads = new AtomicReferenceArray<>(threadNum);
 		int result = 0;
-		Range[] ranges = MathUtil.getRangeArray(rangeBegin, rangeEnd, threadNum);
+		Range[] ranges = MathUtil.getRangeArray(rangeBegin, rangeEnd, parts);
+		List<Future<Integer>> futureList = new ArrayList<>(ranges.length);
 
 		for (int i = 0; i < ranges.length; i++) {
-			localThreads.set(i, new Thread(new MillerCountPrimesRunnable(ranges[i], i, resultArray)));
-			threads[i] = localThreads.get(i);
-			threads[i].start();
+			futureList.add(threadPool.submit(new PrimeCounterCallable(ranges[i])));
 		}
 
-		for (int i = 0; i < threads.length; i++) {
-			try {
-				threads[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		for (Future<Integer> future : futureList) {
+			result += future.get();
 		}
-
-		for (int i = 0; i < resultArray.length(); i++) {
-			result += resultArray.get(i);
+		if (stopped) {
+			result = 0;
 		}
 
 		return result;
@@ -137,6 +149,18 @@ public class PrimeCounterTask implements SubTask {
 
 	public SubTask newInstance() {
 		return new PrimeCounterTask();
+	}
+
+	@Override
+	public boolean isStopped() {
+		return stopped;
+	}
+
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		PrimeCounterTask task = new PrimeCounterTask();
+		System.out.println(task.countPrimes(0, 5161954, 2));
+		System.out.println(task.countPrimes(5161955, 10323909, 2));
+		System.out.println(task.countPrimes(10323910, 15485863, 2));
 	}
 
 }

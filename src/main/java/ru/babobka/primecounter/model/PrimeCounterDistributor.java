@@ -12,15 +12,19 @@ import java.util.Map;
  * Created by dolgopolov.a on 31.07.15.
  */
 public final class PrimeCounterDistributor implements RequestDistributor {
+
 	private static final String BEGIN = "begin";
 
 	private static final String END = "end";
 
-	private static final String TASK_NAME = "millerPrimeCounter";
+	private final String taskName;
+
+	public PrimeCounterDistributor(String taskName) {
+		this.taskName = taskName;
+	}
 
 	@Override
-	public NodeRequest[] distribute(Map<String, String> addition,
-			int nodes, long id) {
+	public NodeRequest[] distribute(Map<String, String> addition, int nodes, long id) {
 
 		long begin = Long.parseLong(addition.get(BEGIN));
 		long end = Long.parseLong(addition.get(END));
@@ -31,9 +35,8 @@ public final class PrimeCounterDistributor implements RequestDistributor {
 			innerAdditionMap = new HashMap<>();
 			innerAdditionMap.put(BEGIN, ranges[i].getBegin());
 			innerAdditionMap.put(END, ranges[i].getEnd());
-			requests[i] = new NodeRequest(id,
-					(int) (Math.random() * Integer.MAX_VALUE), TASK_NAME,
-					innerAdditionMap, false, false);
+			requests[i] = new NodeRequest(id, (int) (Math.random() * Integer.MAX_VALUE), taskName, innerAdditionMap,
+					false, false);
 		}
 		return requests;
 
@@ -42,8 +45,7 @@ public final class PrimeCounterDistributor implements RequestDistributor {
 	@Override
 	public boolean isValidArguments(Map<String, String> addition) {
 		try {
-			Long begin = Long.parseLong(addition.get(BEGIN)), end = Long
-					.parseLong(addition.get(END));
+			Long begin = Long.parseLong(addition.get(BEGIN)), end = Long.parseLong(addition.get(END));
 			if (begin.compareTo(end) >= 0 || begin.compareTo(0L) < 0) {
 				return false;
 			}

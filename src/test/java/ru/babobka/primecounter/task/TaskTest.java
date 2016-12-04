@@ -15,7 +15,7 @@ import ru.babobka.subtask.model.SubTask;
 
 public class TaskTest {
 
-	private final SubTask TASK = new PrimeCounterTask();
+	private SubTask task;
 
 	private NodeRequest tenPrimesRequest;
 
@@ -27,6 +27,7 @@ public class TaskTest {
 
 	@Before
 	public void init() {
+		task = new PrimeCounterTask();
 		Map<String, Serializable> additionMap = new HashMap<>();
 		additionMap.put("begin", 0);
 		additionMap.put("end", 15_485_863);
@@ -50,30 +51,48 @@ public class TaskTest {
 
 	@Test
 	public void testValidation() {
-		assertTrue(TASK.validateRequest(thousandPrimesRequest).isValid());
+		assertTrue(task.validateRequest(thousandPrimesRequest).isValid());
 		thousandPrimesRequest.getAddition().put("begin", -1);
-		assertFalse(TASK.validateRequest(thousandPrimesRequest).isValid());
+		assertFalse(task.validateRequest(thousandPrimesRequest).isValid());
 	}
 
-	
 	@Test
 	public void testMillionPrimes() {
-		assertEquals(TASK.execute(millionPrimesRequest).getResultMap().get("primeCount"), 1_000_000);
+		assertEquals(task.execute(millionPrimesRequest).getResultMap().get("primeCount"), 1_000_000);
 	}
-	
+
+	@Test
+	public void testStop() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(1000);
+					task.stopTask();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
+		assertEquals(task.execute(millionPrimesRequest).getResultMap().get("primeCount"), 0);
+		assertTrue(task.isStopped());
+	}
+
 	@Test
 	public void testTenThousandPrimes() {
-		assertEquals(TASK.execute(tenThousandPrimesRequest).getResultMap().get("primeCount"), 10000);
+		assertEquals(task.execute(tenThousandPrimesRequest).getResultMap().get("primeCount"), 10000);
 	}
 
 	@Test
 	public void testTenPrimes() {
-		assertEquals(TASK.execute(tenPrimesRequest).getResultMap().get("primeCount"), 10);
+		assertEquals(task.execute(tenPrimesRequest).getResultMap().get("primeCount"), 10);
 	}
 
 	@Test
 	public void testThousandPrimes() {
-		assertEquals(TASK.execute(thousandPrimesRequest).getResultMap().get("primeCount"), 1000);
+		assertEquals(task.execute(thousandPrimesRequest).getResultMap().get("primeCount"), 1000);
 	}
 
 }

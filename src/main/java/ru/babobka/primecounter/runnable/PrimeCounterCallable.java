@@ -4,29 +4,25 @@ import ru.babobka.primecounter.model.Range;
 import ru.babobka.primecounter.tester.DummyPrimeTester;
 import ru.babobka.primecounter.tester.PrimeTester;
 
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.Callable;
 
 /**
  * Created by dolgopolov.a on 07.07.15.
  */
-public class MillerCountPrimesRunnable implements Runnable {
+public class PrimeCounterCallable implements Callable<Integer> {
 
 	private final Range range;
 
-	private final AtomicIntegerArray resultArray;
-
-	private final int id;
 
 	private final PrimeTester tester = new DummyPrimeTester();
 
-	public MillerCountPrimesRunnable(Range range, int id, AtomicIntegerArray resultArray) {
+	public PrimeCounterCallable(Range range) {
 		this.range = range;
-		this.id = id;
-		this.resultArray = resultArray;
 	}
 
 	@Override
-	public void run() {
+	public Integer call() throws Exception {
+
 		int result = 0;
 		long counter = range.getBegin();
 
@@ -36,8 +32,7 @@ public class MillerCountPrimesRunnable implements Runnable {
 			}
 			counter++;
 		}
-
-		resultArray.set(id, result);
+		return result;
 	}
 
 }

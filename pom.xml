@@ -13,6 +13,11 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160212</version>
+		</dependency>
 
 		<dependency>
 			<groupId>ru.babobka.nodeserials</groupId>
@@ -28,6 +33,7 @@
 		</dependency>
 	</dependencies>
 	<build>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -37,5 +43,6 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-		</plugins></build>
+		</plugins>
+	</build>
 </project>
