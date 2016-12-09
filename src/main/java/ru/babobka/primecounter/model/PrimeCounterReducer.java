@@ -1,6 +1,7 @@
 package ru.babobka.primecounter.model;
 
 import ru.babobka.nodeserials.NodeResponse;
+import ru.babobka.primecounter.task.PrimeCounterTask;
 import ru.babobka.subtask.exception.ReducingException;
 import ru.babobka.subtask.model.Reducer;
 
@@ -15,20 +16,22 @@ import java.util.Map;
 public final class PrimeCounterReducer implements Reducer {
 
 	@Override
-	public Map<String, Serializable> reduce(
-			List<NodeResponse> responses) throws ReducingException {
+	public Map<String, Serializable> reduce(List<NodeResponse> responses) throws ReducingException {
 		try {
-			Long result = 0L;
+			int result = 0;
 			for (NodeResponse response : responses) {
 				if (isValidResponse(response)) {
-					result += (Integer) response.getAddition()
-							.get("primeCount");
+					Integer subResult = response.getAdditionValue(PrimeCounterTask.PRIME_COUNT);
+					if (subResult != null) {
+						result += subResult;
+					}
+
 				} else {
 					throw new ReducingException();
 				}
 			}
 			Map<String, Serializable> resultMap = new HashMap<>();
-			resultMap.put("primeCount", result);
+			resultMap.put(PrimeCounterTask.PRIME_COUNT, result);
 			return resultMap;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -38,8 +41,8 @@ public final class PrimeCounterReducer implements Reducer {
 
 	@Override
 	public boolean isValidResponse(NodeResponse response) {
-		if (response!=null && response.getStatus() == NodeResponse.Status.NORMAL
-				&& response.getAddition().get("primeCount") != null) {
+		if (response != null && response.getStatus() == NodeResponse.Status.NORMAL
+				&& response.getAdditionValue(PrimeCounterTask.PRIME_COUNT) != null) {
 			return true;
 		}
 		return false;

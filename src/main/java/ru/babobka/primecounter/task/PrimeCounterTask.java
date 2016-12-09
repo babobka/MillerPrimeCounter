@@ -28,13 +28,13 @@ import java.util.concurrent.Future;
  */
 public class PrimeCounterTask implements SubTask {
 
-	private ExecutorService threadPool;
+	private volatile ExecutorService threadPool;
 
 	private static final String BEGIN = "begin";
 
 	private static final String END = "end";
 
-	private static final String PRIME_COUNT = "primeCount";
+	public static final String PRIME_COUNT = "primeCount";
 
 	private static final Long MIN_RANGE_TO_PARALLEL = 5000L;
 
@@ -49,9 +49,10 @@ public class PrimeCounterTask implements SubTask {
 	}
 
 	@Override
-	public void stopTask() {
+	public synchronized void stopTask() {
 		stopped = true;
-		threadPool.shutdownNow();
+		if (threadPool != null)
+			threadPool.shutdownNow();
 
 	}
 
@@ -60,17 +61,18 @@ public class PrimeCounterTask implements SubTask {
 		try {
 			if (!stopped) {
 				Map<String, Serializable> result = new HashMap<>();
-				int threadNum;
-				if (isRequestDataTooSmall(request.getAddition())) {
-					threadNum = 1;
-				} else {
-					threadNum = Runtime.getRuntime().availableProcessors();
-				}
-				threadPool = Executors.newFixedThreadPool(threadNum);
+				long begin = Long.parseLong(request.getStringAdditionValue(BEGIN));
+				long end = Long.parseLong(request.getStringAdditionValue(END));
+				int cores = getCores(request);
 				try {
-					result.put(PRIME_COUNT, countPrimes(((Number) request.getAddition().get(BEGIN)).longValue(),
-							((Number) request.getAddition().get(END)).longValue(), threadNum));
-				} catch (Exception e) {
+					synchronized (this) {
+						if (!stopped) {
+							threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+						}
+					}
+					int primes = countPrimes(threadPool, begin, end, cores);
+					result.put(PRIME_COUNT, primes);
+				} catch (InterruptedException | ExecutionException e) {
 					if (!stopped) {
 						e.printStackTrace();
 					}
@@ -80,10 +82,20 @@ public class PrimeCounterTask implements SubTask {
 				return new ExecutionResult(stopped, null);
 			}
 		} finally {
-			if (threadPool != null) {
+			if (threadPool != null)
 				threadPool.shutdownNow();
-			}
+
 		}
+	}
+
+	private int getCores(NodeRequest request) {
+
+		if (isRequestDataTooSmall(request)) {
+			return 1;
+		} else {
+			return Runtime.getRuntime().availableProcessors();
+		}
+
 	}
 
 	@Override
@@ -93,8 +105,8 @@ public class PrimeCounterTask implements SubTask {
 			return new ValidationResult("Request is empty", false);
 		} else {
 			try {
-				long begin = ((Number) request.getAddition().get(BEGIN)).longValue();
-				long end = ((Number) request.getAddition().get(END)).longValue();
+				long begin = Long.parseLong(request.getStringAdditionValue(BEGIN));
+				long end = Long.parseLong(request.getStringAdditionValue(END));
 				if (begin < 0 || end < 0 || begin > end) {
 					return new ValidationResult("begin is more than end", false);
 				}
@@ -106,24 +118,24 @@ public class PrimeCounterTask implements SubTask {
 		return new ValidationResult(true);
 	}
 
-	private int countPrimes(long rangeBegin, long rangeEnd, int parts) throws InterruptedException, ExecutionException {
-
+	private int countPrimes(ExecutorService threadPool, long rangeBegin, long rangeEnd, int cores)
+			throws InterruptedException, ExecutionException {
 		int result = 0;
-		Range[] ranges = MathUtil.getRangeArray(rangeBegin, rangeEnd, parts);
-		List<Future<Integer>> futureList = new ArrayList<>(ranges.length);
-
-		for (int i = 0; i < ranges.length; i++) {
-			futureList.add(threadPool.submit(new PrimeCounterCallable(ranges[i])));
+		if (threadPool != null) {
+			Range[] ranges = MathUtil.getRangeArray(rangeBegin, rangeEnd, cores);
+			List<Future<Integer>> futureList = new ArrayList<>(ranges.length);
+			for (int i = 0; i < ranges.length; i++) {
+				futureList.add(threadPool.submit(new PrimeCounterCallable(ranges[i])));
+			}
+			for (Future<Integer> future : futureList) {
+				result += future.get();
+			}
+			if (stopped) {
+				result = 0;
+			}
 		}
-
-		for (Future<Integer> future : futureList) {
-			result += future.get();
-		}
-		if (stopped) {
-			result = 0;
-		}
-
 		return result;
+
 	}
 
 	@Override
@@ -137,9 +149,9 @@ public class PrimeCounterTask implements SubTask {
 	}
 
 	@Override
-	public boolean isRequestDataTooSmall(Map<String, Serializable> addition) {
-		long begin = ((Number) addition.get(BEGIN)).longValue();
-		long end = ((Number) addition.get(END)).longValue();
+	public boolean isRequestDataTooSmall(NodeRequest request) {
+		long begin = Long.parseLong(request.getStringAdditionValue(BEGIN));
+		long end = Long.parseLong(request.getStringAdditionValue(END));
 		if (end - begin > MIN_RANGE_TO_PARALLEL) {
 			return false;
 		}
@@ -154,13 +166,6 @@ public class PrimeCounterTask implements SubTask {
 	@Override
 	public boolean isStopped() {
 		return stopped;
-	}
-
-	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		PrimeCounterTask task = new PrimeCounterTask();
-		System.out.println(task.countPrimes(0, 5161954, 2));
-		System.out.println(task.countPrimes(5161955, 10323909, 2));
-		System.out.println(task.countPrimes(10323910, 15485863, 2));
 	}
 
 }

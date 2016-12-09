@@ -14,7 +14,7 @@ public class PrimeCounterCallable implements Callable<Integer> {
 	private final Range range;
 
 
-	private final PrimeTester tester = new DummyPrimeTester();
+	private static final PrimeTester tester = new DummyPrimeTester();
 
 	public PrimeCounterCallable(Range range) {
 		this.range = range;

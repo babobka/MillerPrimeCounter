@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,32 +30,31 @@ public class TaskTest {
 	public void init() {
 		task = new PrimeCounterTask();
 		Map<String, Serializable> additionMap = new HashMap<>();
-		additionMap.put("begin", 0);
-		additionMap.put("end", 15_485_863);
-		millionPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
+		additionMap.put("begin", 0L);
+		additionMap.put("end", 15_485_863L);
+		millionPrimesRequest = new NodeRequest(UUID.randomUUID(), UUID.randomUUID(), "millerPrimeCounter", additionMap,
+				false, false);
 
 		additionMap = new HashMap<>();
-		additionMap.put("begin", 0);
-		additionMap.put("end", 7919);
-		thousandPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
+		additionMap.put("begin", 0L);
+		additionMap.put("end", 7919L);
+		thousandPrimesRequest = new NodeRequest(UUID.randomUUID(), UUID.randomUUID(), "millerPrimeCounter", additionMap,
+				false, false);
 
 		additionMap = new HashMap<>();
-		additionMap.put("begin", 0);
-		additionMap.put("end", 104729);
-		tenThousandPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
+		additionMap.put("begin", 0L);
+		additionMap.put("end", 104729L);
+		tenThousandPrimesRequest = new NodeRequest(UUID.randomUUID(), UUID.randomUUID(), "millerPrimeCounter",
+				additionMap, false, false);
 
 		additionMap = new HashMap<>();
-		additionMap.put("begin", 0);
-		additionMap.put("end", 29);
-		tenPrimesRequest = new NodeRequest(1, 1, "millerPrimeCounter", additionMap, false, false);
+		additionMap.put("begin", 0L);
+		additionMap.put("end", 29L);
+		tenPrimesRequest = new NodeRequest(UUID.randomUUID(), UUID.randomUUID(), "millerPrimeCounter", additionMap,
+				false, false);
 	}
 
-	@Test
-	public void testValidation() {
-		assertTrue(task.validateRequest(thousandPrimesRequest).isValid());
-		thousandPrimesRequest.getAddition().put("begin", -1);
-		assertFalse(task.validateRequest(thousandPrimesRequest).isValid());
-	}
+	
 
 	@Test
 	public void testMillionPrimes() {

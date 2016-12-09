@@ -7,6 +7,7 @@ import ru.babobka.subtask.model.RequestDistributor;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by dolgopolov.a on 31.07.15.
@@ -24,7 +25,7 @@ public final class PrimeCounterDistributor implements RequestDistributor {
 	}
 
 	@Override
-	public NodeRequest[] distribute(Map<String, String> addition, int nodes, long id) {
+	public NodeRequest[] distribute(Map<String, String> addition, int nodes, UUID taskId) {
 
 		long begin = Long.parseLong(addition.get(BEGIN));
 		long end = Long.parseLong(addition.get(END));
@@ -35,8 +36,7 @@ public final class PrimeCounterDistributor implements RequestDistributor {
 			innerAdditionMap = new HashMap<>();
 			innerAdditionMap.put(BEGIN, ranges[i].getBegin());
 			innerAdditionMap.put(END, ranges[i].getEnd());
-			requests[i] = new NodeRequest(id, (int) (Math.random() * Integer.MAX_VALUE), taskName, innerAdditionMap,
-					false, false);
+			requests[i] = new NodeRequest(taskId, UUID.randomUUID(), taskName, innerAdditionMap, false, false);
 		}
 		return requests;
 
@@ -45,8 +45,9 @@ public final class PrimeCounterDistributor implements RequestDistributor {
 	@Override
 	public boolean isValidArguments(Map<String, String> addition) {
 		try {
-			Long begin = Long.parseLong(addition.get(BEGIN)), end = Long.parseLong(addition.get(END));
-			if (begin.compareTo(end) >= 0 || begin.compareTo(0L) < 0) {
+			long begin = Long.parseLong(addition.get(BEGIN));
+			long end = Long.parseLong(addition.get(END));
+			if (begin >= end || begin < 0) {
 				return false;
 			}
 		} catch (Exception e) {

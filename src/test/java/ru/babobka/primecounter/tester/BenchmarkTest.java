@@ -29,7 +29,7 @@ public class BenchmarkTest {
 
 	}
 
-	private class Timer {
+	private static class Timer {
 		private long time;
 		private String title;
 
