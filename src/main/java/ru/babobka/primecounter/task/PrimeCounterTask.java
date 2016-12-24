@@ -1,10 +1,10 @@
 package ru.babobka.primecounter.task;
 
 import ru.babobka.nodeserials.NodeRequest;
+import ru.babobka.primecounter.callable.PrimeCounterCallable;
 import ru.babobka.primecounter.model.PrimeCounterDistributor;
 import ru.babobka.primecounter.model.PrimeCounterReducer;
 import ru.babobka.primecounter.model.Range;
-import ru.babobka.primecounter.runnable.PrimeCounterCallable;
 import ru.babobka.primecounter.util.MathUtil;
 
 import ru.babobka.subtask.model.ExecutionResult;

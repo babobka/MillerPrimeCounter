@@ -1,4 +1,4 @@
-package ru.babobka.primecounter.runnable;
+package ru.babobka.primecounter.callable;
 
 import ru.babobka.primecounter.model.Range;
 import ru.babobka.primecounter.tester.DummyPrimeTester;

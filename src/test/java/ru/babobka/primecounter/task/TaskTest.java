@@ -16,7 +16,7 @@ import ru.babobka.subtask.model.SubTask;
 
 public class TaskTest {
 
-	private SubTask task;
+	public SubTask task;
 
 	private NodeRequest tenPrimesRequest;
 
